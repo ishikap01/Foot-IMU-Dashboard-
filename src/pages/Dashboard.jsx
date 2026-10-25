@@ -23,12 +23,7 @@ import {
   Settings2,
 } from "lucide-react";
 
-import {
-  mockGaitMetrics,
-  mockStrideData,
-  mockSession,
-  mockTrajectory,
-} from "../data/mockData";
+import { mockTrajectory } from "../data/mockData";
 
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -39,8 +34,6 @@ import EventDetectionChart from "../components/EventDetectionChart";
 import GaitMetricCard from "../components/GaitMetricCard";
 import StrideChart from "../components/StrideChart";
 import FootTrajectory from "../components/FootTrajectory";
-
-
 
 function Dashboard() {
   const [subjects, setSubjects] = useState([]);
@@ -76,7 +69,7 @@ function Dashboard() {
     };
   }, []);
 
-  // Load the data belonging to the selected subjects.
+  // Load data for the selected subject.
   useEffect(() => {
     if (!subjectsLoaded) return;
 
@@ -116,11 +109,10 @@ function Dashboard() {
   }, [subjects, selectedIds, subjectsLoaded]);
 
   function toggleSubject(id) {
-  setSelectedIds([id]);
-}
+    setSelectedIds([id]);
+  }
 
-  // The current chart components accept one dataset at a time.
-  // Use the first selected subject until chart comparison is implemented.
+  // The charts currently display one selected subject at a time.
   const activeTrial = trials[0] ?? null;
 
   const sensorData = activeTrial
@@ -133,23 +125,17 @@ function Dashboard() {
         activeTrial.eventRows
       )
     : [];
-    const gaitMetrics = activeTrial
-  ? processGaitMetrics(
-      activeTrial.temporalRows,
-      activeTrial.eventRows
-    )
-  : null;
 
-const strideData = activeTrial
-  ? processStrideRows(activeTrial.temporalRows)
-  : [];
-  console.log("Selected subject:", activeTrial?.subject);
-console.log("Temporal rows:", activeTrial?.temporalRows);
-console.log(
-  "Temporal columns:",
-  Object.keys(activeTrial?.temporalRows?.[0] ?? {})
-);
-console.log("Processed stride data:", strideData);
+  const gaitMetrics = activeTrial
+    ? processGaitMetrics(
+        activeTrial.temporalRows,
+        activeTrial.eventRows
+      )
+    : null;
+
+  const strideData = activeTrial
+    ? processStrideRows(activeTrial.temporalRows)
+    : [];
 
   if (error) {
     return <p role="alert">Failed to load subject data: {error}</p>;
@@ -177,32 +163,26 @@ console.log("Processed stride data:", strideData);
     );
   }
 
-  if (!activeTrial) {
+  if (!activeTrial || !gaitMetrics) {
     return <p>No trial data is available for the selected participant.</p>;
   }
 
   return (
-
-  
     <div className="app-shell">
       <Sidebar />
 
       <div className="main-shell">
         <Header
-  subjects={subjects}
-  selectedIds={selectedIds}
-  onToggleSubject={toggleSubject}
-/>
+          subjects={subjects}
+          selectedIds={selectedIds}
+          onToggleSubject={toggleSubject}
+        />
 
         <main className="dashboard-content">
+          {/* 1. Status cards */}
           <section className="status-grid">
-            <StatusCard
-              icon={Bluetooth}
-              label="Sensor Status"
-              value="Connected"
-              detail="RYMO IMU  •  Battery 78%"
-              tone="blue"
-            />
+            
+
             <StatusCard
               icon={Activity}
               label="Current Subject"
@@ -210,6 +190,7 @@ console.log("Processed stride data:", strideData);
               detail="Right Foot"
               tone="blue"
             />
+
             <StatusCard
               icon={ClipboardList}
               label="Last Trial"
@@ -217,6 +198,7 @@ console.log("Processed stride data:", strideData);
               detail="Duration: 25.3 s"
               tone="blue"
             />
+
             <StatusCard
               icon={CheckCircle2}
               label="Calibration Status"
@@ -226,119 +208,109 @@ console.log("Processed stride data:", strideData);
             />
           </section>
 
+          {/* 2. Action cards */}
           <section className="actions-grid">
-            <ActionCard icon={Settings2} label="Start Calibration" description="5s standing + 20s walking" tone="green" />
-            <ActionCard icon={Play} label="Start Recording" description="Record 25s trial" tone="blue" />
-            <ActionCard icon={Activity} label="Analyze Trial" description="Process gait parameters" tone="purple" />
-            <ActionCard icon={FolderOpen} label="View Results" description="Open trial history" tone="white" />
+            <ActionCard
+              icon={Settings2}
+              label="Start Calibration"
+              description="5s standing + 20s walking"
+              tone="green"
+            />
+
+            <ActionCard
+              icon={Play}
+              label="Start Recording"
+              description="Record 25s trial"
+              tone="blue"
+            />
+
+            <ActionCard
+              icon={Activity}
+              label="Analyze Trial"
+              description="Process gait parameters"
+              tone="purple"
+            />
+
+            <ActionCard
+              icon={FolderOpen}
+              label="View Results"
+              description="Open trial history"
+              tone="white"
+            />
           </section>
 
-          <section className="analysis-top-grid">
-  <PrimaryChart data={sensorData} />
-  <EventDetectionChart data={eventData} />
-</section>
-
+          {/* 3. All 7 key gait metrics ABOVE the main graphs */}
           <section className="metrics-analysis">
+            
             <div className="gait-metrics-grid">
-             
-<GaitMetricCard
-  label="Heel Strikes"
-  value={gaitMetrics.heelStrikes}
-  detail="Detected events"
-  tone="red"
-/>
+              <GaitMetricCard
+                label="Heel Strikes"
+                value={gaitMetrics.heelStrikes}
+                detail="Detected heel contacts"
+                tone="blue"
+              />
 
-<GaitMetricCard
-  label="Toe Offs"
-  value={gaitMetrics.toeOffs}
-  detail="Detected events"
-  tone="green"
-/>
+              <GaitMetricCard
+                label="Toe Offs"
+                value={gaitMetrics.toeOffs}
+                detail="Detected toe-off events"
+                tone="purple"
+              />
 
-<GaitMetricCard
-  label="Stride Cycles"
-  value={gaitMetrics.strideCycles}
-  detail={`Valid cycles: ${gaitMetrics.validCycles}`}
-  tone="orange"
-/>
+              <GaitMetricCard
+                label="Stride Cycles"
+                value={gaitMetrics.strideCycles}
+                detail={`${gaitMetrics.validCycles} valid cycles`}
+                tone="green"
+              />
 
-<GaitMetricCard
-  label="Stride Time"
-  value={
-    gaitMetrics.strideTime === null
-      ? "—"
-      : `${gaitMetrics.strideTime} s`
-  }
-  detail={
-    gaitMetrics.strideTimeStd === null
-      ? "Standard deviation unavailable"
-      : `± ${gaitMetrics.strideTimeStd} s`
-  }
-  tone="purple"
-/>
+              <GaitMetricCard
+                label="Stride Time"
+                value={`${gaitMetrics.strideTime} s`}
+                detail={`± ${gaitMetrics.strideTimeStd} s`}
+                tone="orange"
+              />
 
-<GaitMetricCard
-  label="Cadence"
-  value={
-    gaitMetrics.cadence === null
-      ? "—"
-      : `${gaitMetrics.cadence} steps/min`
-  }
-  detail={
-    gaitMetrics.cadenceStd === null
-      ? "Standard deviation unavailable"
-      : `± ${gaitMetrics.cadenceStd} steps/min`
-  }
-  tone="blue"
-/>
+              <GaitMetricCard
+                label="Cadence"
+                value={gaitMetrics.cadence}
+                detail={`± ${gaitMetrics.cadenceStd} steps/min`}
+                tone="blue"
+              />
 
-<GaitMetricCard
-  label="Stride Length"
-  value={
-    gaitMetrics.strideLength === null
-      ? "—"
-      : `${gaitMetrics.strideLength} m`
-  }
-  detail={
-    gaitMetrics.strideLengthStd === null
-      ? "Standard deviation unavailable"
-      : `± ${gaitMetrics.strideLengthStd} m`
-  }
-  tone="green"
-/>
+              <GaitMetricCard
+                label="Stride Length"
+                value={`${gaitMetrics.strideLength} m`}
+                detail={`± ${gaitMetrics.strideLengthStd} m`}
+                tone="green"
+              />
 
-<GaitMetricCard
-  label="Stride Height"
-  value={
-    gaitMetrics.strideHeight === null
-      ? "—"
-      : `${(gaitMetrics.strideHeight * 100).toFixed(1)} cm`
-  }
-  detail={
-    gaitMetrics.strideHeightStd === null
-      ? "Standard deviation unavailable"
-      : `± ${(gaitMetrics.strideHeightStd * 100).toFixed(1)} cm`
-  }
-  tone="orange"
-/>
-
+              <GaitMetricCard
+                label="Stride Height"
+                value={`${gaitMetrics.strideHeight} m`}
+                detail={`± ${gaitMetrics.strideHeightStd} m`}
+                tone="purple"
+              />
             </div>
+
           </section>
 
+          {/* 4. Main sensor and event-detection graphs */}
+          <section className="analysis-top-grid">
+            <PrimaryChart data={sensorData} />
+            <EventDetectionChart data={eventData} />
+          </section>
+
+          {/* 5. Detailed stride analysis */}
           <section className="lower-analysis-grid">
             <StrideChart data={strideData} type="height" />
-<StrideChart data={strideData} type="length" />
+            <StrideChart data={strideData} type="length" />
             <FootTrajectory data={mockTrajectory} />
           </section>
-
-         
         </main>
       </div>
     </div>
   );
 }
-
-  
-
 
 export default Dashboard;

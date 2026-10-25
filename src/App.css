@@ -239,11 +239,13 @@ button {
   padding: 12px 14px 18px;
 }
 
+
 .status-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 9px;
 }
+
 
 .status-card {
   background: var(--surface);
@@ -491,7 +493,7 @@ button {
 }
 
 .metrics-analysis {
-  margin-top: 9px;
+  margin: 10px 0;
 }
 
 .gait-metrics-grid {
@@ -686,7 +688,8 @@ button {
   }
 
   .analysis-top-grid {
-    grid-template-columns: 1fr;
+  margin-top: 10px;
+  grid-template-columns: 1fr;
   }
 }
 

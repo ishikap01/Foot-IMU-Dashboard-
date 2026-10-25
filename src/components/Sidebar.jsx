@@ -1,11 +1,9 @@
+
 import {
   Activity,
   BarChart3,
-  Bluetooth,
-  CalendarDays,
   CircleHelp,
   Footprints,
-  Gauge,
   History,
   LayoutDashboard,
   Settings,
@@ -14,7 +12,6 @@ import {
 
 const items = [
   { label: "Dashboard", icon: LayoutDashboard, active: true },
-  { label: "Sensor & Connection", icon: Bluetooth },
   { label: "Calibration", icon: SlidersHorizontal },
   { label: "Record Trial", icon: Activity },
   { label: "Gait Analysis", icon: BarChart3 },
@@ -38,7 +35,10 @@ function Sidebar() {
 
       <nav className="sidebar-nav">
         {items.map(({ label, icon: Icon, active }) => (
-          <button key={label} className={`nav-item ${active ? "active" : ""}`}>
+          <button
+            key={label}
+            className={`nav-item ${active ? "active" : ""}`}
+          >
             <Icon size={18} />
             <span>{label}</span>
           </button>
